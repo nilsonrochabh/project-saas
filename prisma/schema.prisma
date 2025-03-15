@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Tenant {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  nome      String
+  logoUrl   String?
+  corPrimaria String
+  categoria Categoria[]
+  produtos  Produto[]
+  usuarios  Usuario[]
+  vendas    Venda[]
+  carrinho Carrinho[]
+  frete Frete[]
+  itensCarrinho ItemCarrinho[]
+  pedidos Pedido[]
+  tenantUsuarios TenantUsuario[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model TenantUsuario {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  role      String   // Papel do usuário no tenant (ex: "admin", "cliente")
+}
+model Frete {
+  id        Int      @id @default(autoincrement())
+  bairro    String
+  valor     Float
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Categoria {
+  id        Int      @id @default(autoincrement())
+  nome      String   @unique
+  tenantId    Int
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  produtos  Produto[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Produto {
+  id          Int      @id @default(autoincrement())
+  nome        String
+  descricao   String?
+  preco       Float
+  quantidade  Int 
+  categoriaId Int
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  tenantId    Int
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  vendas      Venda[]
+  itensPedido ItemPedido[]
+  itensCarrinho ItemCarrinho[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  phone     String?
+  email     String   @unique
+  senha     String   // Senha criptografada
+  role      String   // "admin", "vendedor", "consultor"
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  refreshToken String?  // Adicionar campo para o refresh token
+  tenantUsuarios TenantUsuario[]
+  endereco Endereco[]
+  pedidos   Pedido[]
+  carrinho Carrinho[]
+  @@unique([email, tenantId]) // E-mail único por tenant
+
+}
+
+model Venda {
+  id        Int      @id @default(autoincrement())
+  data      DateTime @default(now())
+  quantidade Int
+  produtoId Int
+  produto   Produto  @relation(fields: [produtoId], references: [id])
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+
+model Endereco {
+  id           Int      @id @default(autoincrement())
+  cep          String
+  logradouro   String
+  numero       String?
+  complemento  String?
+  bairro       String?
+  cidade       String?
+  estado       String
+  usuarioId      Int
+  usuario      Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model Pedido {
+  id             Int      @id @default(autoincrement())
+  data           DateTime @default(now())
+  valorTotal     Decimal   @db.Decimal(10,2)
+  usuarioId      Int
+  usuario        Usuario  @relation(fields: [usuarioId], references: [id])
+  tenantId       Int      // Novo campo
+  tenant         Tenant   @relation(fields: [tenantId], references: [id]) // Nova relação
+  itens          ItemPedido[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ItemPedido {
+  id        Int      @id @default(autoincrement())
+  quantidade Int
+  precoUnitario Float
+  produtoId  Int
+  produto    Produto @relation(fields: [produtoId], references: [id])
+  pedidoId   Int
+  pedido     Pedido  @relation(fields: [pedidoId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+model Carrinho {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  tenantId  Int      // Adicionar tenantId
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  itens     ItemCarrinho[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ItemCarrinho {
+  id         Int      @id @default(autoincrement())
+  produtoId  Int
+  produto    Produto  @relation(fields: [produtoId], references: [id])
+  quantidade Int
+  carrinhoId Int
+  carrinho   Carrinho @relation(fields: [carrinhoId], references: [id])
+  tenantId   Int      // Adicionar tenantId
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
