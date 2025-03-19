@@ -7,7 +7,9 @@ interface TenantPageProps {
 }
 
 export default async function TenantPage({ params }: TenantPageProps) {
-  const { tenant } = params;
+ 
+  
+  const {tenant } = params;
 
   // Buscar dados do tenant no banco de dados
   const tenantData = await prisma.tenant.findUnique({
