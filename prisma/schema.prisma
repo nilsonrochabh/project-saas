@@ -87,6 +87,8 @@ model Usuario {
   tenantId  Int
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
   refreshToken String?  // Adicionar campo para o refresh token
+  resetToken String? // Token de redefinição de senha
+  resetTokenExpiry DateTime? // Timestamp de expiração do token
   tenantUsuarios TenantUsuario[]
   endereco Endereco[]
   pedidos   Pedido[]
