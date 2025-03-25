@@ -1,5 +1,7 @@
+
 import { getSession } from 'next-auth/react';
 import prisma from '@/lib/prisma';
+import { Box, Button, Typography } from '@mui/material';
 
 interface ProdutosPageProps {
   params: {
@@ -31,21 +33,21 @@ export default async function ProdutosPage({ params }: ProdutosPageProps) {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Produtos da {tenantData.nome}</h1>
-      <ul>
+    <Box style={{ padding: '20px' }}>
+      <Typography component='h1'>Produtos da {tenantData.nome}</Typography>
+      <Typography component="ul">
         {tenantData.produtos.map((produto) => (
-          <li key={produto.id} style={{ marginBottom: '20px' }}>
-            <h2>{produto.nome}</h2>
-            <p>{produto.descricao}</p>
-            <p>Preço: R$ {produto.preco.toFixed(2)}</p>
-            <p>Categoria: {produto.categoria.nome}</p>
-            <button onClick={() => adicionarAoCarrinho(produto.id)}>
+          <Typography component='li' key={produto.id} style={{ marginBottom: '20px' }}>
+            <Typography component='h2'>{produto.nome}</Typography>
+            <Typography component='p'>{produto.descricao}</Typography>
+            <Typography component='p'>Preço: R$ {produto.preco.toFixed(2)}</Typography>
+            <Typography component='p'>Categoria: {produto.categoria.nome}</Typography>
+            <Button onClick={() => adicionarAoCarrinho(produto.id)}>
               Adicionar ao Carrinho
-            </button>
-          </li>
+            </Button>
+          </Typography>
         ))}
-      </ul>
-    </div>
+      </Typography>
+    </Box>
   );
 }
